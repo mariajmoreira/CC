@@ -12,6 +12,7 @@ public class HttpGw  {
     // request paths.
     private Map<String, Map<String, Handler>> handlers = new HashMap<String, Map<String, Handler>>();
     private Request request;
+    private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
     public HttpGw(int port)  {
         this.port = port;
@@ -83,44 +84,57 @@ public class HttpGw  {
     }
     */
 
-
-    public static void menu() throws IOException, InterruptedException {
+/*
+    public static void submenu() throws IOException, InterruptedException {
         HttpGw server = new HttpGw(80);
         ArrayList<String> opcoes = new ArrayList<>();
         String option;
         option = "Fazer pedido";
         opcoes.add(option);
-        int op = 1;
         Menu menu = new Menu(new String[]{"Fazer Pedido"});
-        //Scanner is = new Scanner(System.in);
+
+
         boolean running = true;
         Scanner input = new Scanner(System.in);
         String line = null;
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(System.in));
+        int op = -1;
 
-        while(op!=0) {
-            
+        do{
+            ServerSocket socket = new ServerSocket(80);
+            menu.showMenu();
+            if(input.hasNext() == true) {
+                System.out.println(input.hasNext());
+                System.out.println(input.hasNextLine());
+                input.reset();
+                op = input.nextInt(); // if there is another number
+            }
+            else {
+                System.out.println(input.hasNext());
+                System.out.println(input.hasNextLine());
+                input.nextLine();
+                op=input.nextInt();
+            }
             System.out.println(op);
             switch (op) {
                 case 1:
-                    server.start();
+                    server.start(socket);
+                    socket.close();
                     System.out.println("pedido realizado");
                     break;
                 case 0:
+                    running = false;
                     System.out.println("programa encerrado");
                     break;
             }
-            input.reset();
-        }
+        } while(running==true);
     }
-
+*/
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        menu();
-
-        //server.start();
+        HttpGw server = new HttpGw(8080);
+        server.start();
+    }
 
         //GET /Users/mariajoao/Desktop/PL/TP1/Final/Atleta93.html HTTP/1.1
-    }
+
 }

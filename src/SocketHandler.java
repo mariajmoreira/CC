@@ -12,7 +12,7 @@ public class SocketHandler implements Runnable {
         //private Handler defaultHandler;
         private Map<String, Map<String, Handler>> handlers;
         private Request request;
-        private int response_Send;
+        private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
     public SocketHandler(Socket socket,
                              Map<String, Map<String, Handler>> handlers, Request request) {
@@ -31,8 +31,7 @@ public class SocketHandler implements Runnable {
         }
 
 
-        public void run() {
-            BufferedReader in = null;
+        public void processa_pedido() {
             OutputStream out = null;
             boolean bool = true;
             try {
@@ -93,7 +92,6 @@ public class SocketHandler implements Runnable {
                             if (handlerPath != (request.getPath())) {
                                 methodHandlers.get(request.getPath()).handle(request, response);
                                 response.send();
-                                this.response_Send = 1;
                                 foundHandler = true;
                                 break;
                             }
@@ -103,7 +101,6 @@ public class SocketHandler implements Runnable {
                             if (methodHandlers.get("/*") != null) {
                                 methodHandlers.get("/*").handle(request, response);
                                 response.send();
-                                this.response_Send = 1;
                             } else {
                                 respond(404, "Not Found", out);
                             }
@@ -130,33 +127,22 @@ public class SocketHandler implements Runnable {
                     e.printStackTrace();
                 }
             }
-
         }
 
-     public void setOpcao(int o){
-            this.response_Send = o;
-     }
-
-    public int getResponse_send(){
-        return this.response_Send;
-    }
-
-    public void submenu(){
-            int p;
-        Menu menu = new Menu( new String[] {"Fazer Pedido"} );
-            menu.executa();
-            int o = menu.getOpcao();
-            switch(o){
-                case 1:
-                    break;
-                case 0:
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-            }
+    public void run(){
+            String opcao = null;
+            Menu menu = new Menu( new String[] {"Fazer Pedido"} );
+           do {
+               menu.showMenu();
+               opcao = in.readLine();
+               switch (opcao) {
+                   case "1":
+                       processa_pedido();
+                       break;
+                   case "0":
+                       break;
+               }
+           }while(opcao!="0");
     }
 
 
