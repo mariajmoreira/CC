@@ -1,18 +1,24 @@
+import org.xml.sax.helpers.DefaultHandler;
+
 import java.io.*;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.net.Socket;
 import java.io.IOException;
 
 
 public class SocketHandler implements Runnable {
         private Socket socket;
-        private Handler defaultHandler;
+        //private Handler defaultHandler;
         private Map<String, Map<String, Handler>> handlers;
+        private Request request;
+        private int response_Send;
 
-        public SocketHandler(Socket socket,
-                             Map<String, Map<String, Handler>> handlers) {
+    public SocketHandler(Socket socket,
+                             Map<String, Map<String, Handler>> handlers, Request request) {
             this.socket = socket;
             this.handlers = handlers;
+            this.request = request;
         }
 
         /**
@@ -24,70 +30,84 @@ public class SocketHandler implements Runnable {
             out.write(responseLine.getBytes());
         }
 
+
         public void run() {
             BufferedReader in = null;
-            //DataInputStream in = null;
             OutputStream out = null;
-
+            boolean bool = true;
             try {
-                //in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                //in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
                 in = new BufferedReader(new InputStreamReader(System.in));
-                System.out.println();
-                System.out.println(in);
-                System.out.println(socket.getInputStream());
-                System.out.println();
-                out = socket.getOutputStream();
-                System.out.println(out);
+                System.out.println("Escreva o seu pedido: ");
+                String s = in.readLine();
+                StringTokenizer tokenizer = null;
+                ArrayList<String> requestToken = new ArrayList<>();
 
-                Request request = new Request(in);
-                //System.out.println(request.toString());
-
-                if (request.parse() == false) {
-                    respond(500, "Unable to parse request", out);
-                    System.out.println("unable to parse request");
-                    return;
-                }
-                else{
-                    System.out.println("able to parse request");
+                tokenizer = new StringTokenizer(s, " ");
+                while (tokenizer.hasMoreTokens()) {
+                    String token = tokenizer.nextToken();
+                    requestToken.add(token);
                 }
 
-                boolean foundHandler = false;
+                System.out.println("Caminho do Pedido: "+ requestToken.get(1));
+                System.out.println();
+
+                Request request = new Request(in,requestToken.get(1));
+
                 Response response = new Response(out);
-                Map<String, Handler> methodHandlers = handlers.get(request.getMethod());
-                System.out.println("handlers: " + handlers);
-                System.out.println("methodhandlers: " + methodHandlers);
-                if (methodHandlers == null) {
-                    respond(405, "Method not supported", out);
-                    System.out.println("Method not supported");
-                    return;
-                }
-                else{
-                    System.out.println("Method supported");
-                }
 
-                for (String handlerPath : methodHandlers.keySet()) {
-                    System.out.println();
-                    System.out.println(handlerPath);
-                    System.out.println(request.getPath());
-                    System.out.println();
-                    if (handlerPath != (request.getPath())) {
-                        methodHandlers.get(request.getPath()).handle(request, response);
-                        response.send();
-                        foundHandler = true;
-                        break;
-                    }
-                }
+                Handler handler = new FileHandler();
+                handler.handle(request, response);
+                HttpGw server = new HttpGw(8080);
+                server.addHandler("GET", "/*", new FileHandler());
+                server.addHandler("GET", requestToken.get(1), handler);
 
-                if (foundHandler==false) {
-                    if (methodHandlers.get("/*") != null) {
-                        System.out.println(methodHandlers.get("/*"));
-                        methodHandlers.get("/*").handle(request, response);
-                        response.send();
-                    } else {
-                        respond(404, "Not Found", out);
-                    }
-                }
+                setHandler("GET", requestToken.get(1), handler);
+                setHandler("GET", "/*", new FileHandler());
+
+                //System.out.println(response.toString());
+                System.out.println();
+
+                out = socket.getOutputStream();
+
+                        if (request.parse(s) == false) {
+                            respond(500, "Unable to parse request", out);
+                            System.out.println("unable to parse request");
+                            return;
+                        } else {
+                            System.out.println("able to parse request");
+                        }
+
+                        boolean foundHandler = false;
+                        Map<String, Handler> methodHandlers = handlers.get(request.getMethod());
+                        //System.out.println("handlers: " + handlers);
+                        //System.out.println("methodhandlers: " + methodHandlers);
+                        if (methodHandlers == null) {
+                            respond(405, "Method not supported", out);
+                            System.out.println("Method not supported");
+                            return;
+                        } else {
+                            System.out.println("Method supported");
+                        }
+
+                        for (String handlerPath : methodHandlers.keySet()) {
+                            if (handlerPath != (request.getPath())) {
+                                methodHandlers.get(request.getPath()).handle(request, response);
+                                response.send();
+                                this.response_Send = 1;
+                                foundHandler = true;
+                                break;
+                            }
+                        }
+
+                        if (foundHandler == false) {
+                            if (methodHandlers.get("/*") != null) {
+                                methodHandlers.get("/*").handle(request, response);
+                                response.send();
+                                this.response_Send = 1;
+                            } else {
+                                respond(404, "Not Found", out);
+                            }
+                        }
             } catch (IOException e) {
                 try {
                     e.printStackTrace();
@@ -96,16 +116,13 @@ public class SocketHandler implements Runnable {
                     }
                 } catch (IOException e2) {
                     e2.printStackTrace();
-                    // We tried
                 }
             } finally {
                 try {
                     if (out != null) {
-                        //System.out.println("out:" + out);
                         out.close();
                     }
                     if (in != null) {
-                        //System.out.println("in:" + in);
                         in.close();
                     }
                     socket.close();
@@ -113,9 +130,46 @@ public class SocketHandler implements Runnable {
                     e.printStackTrace();
                 }
             }
+
         }
 
-        private void log(String msg) {
+     public void setOpcao(int o){
+            this.response_Send = o;
+     }
+
+    public int getResponse_send(){
+        return this.response_Send;
+    }
+
+    public void submenu(){
+            int p;
+        Menu menu = new Menu( new String[] {"Fazer Pedido"} );
+            menu.executa();
+            int o = menu.getOpcao();
+            switch(o){
+                case 1:
+                    break;
+                case 0:
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+            }
+    }
+
+
+    private void setHandler(String method, String path, Handler handler) {
+        Map<String, Handler> methodHandlers = handlers.get(method);
+        if (methodHandlers == null)  {
+            methodHandlers = new HashMap<String, Handler>();
+            handlers.put(method, methodHandlers);
+        }
+        methodHandlers.put(path, handler);
+    }
+
+    private void log(String msg) {
             System.out.println(msg);
         }
 }

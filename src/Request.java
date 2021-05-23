@@ -3,6 +3,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class Request  {
@@ -14,8 +15,17 @@ public class Request  {
     private BufferedReader in;
     //private DataInputStream in;
 
+    public Request(BufferedReader in,String path)  {
+        this.in = in;
+        this.path = path;
+    }
+
     public Request(BufferedReader in)  {
         this.in = in;
+    }
+
+    public Request(String path)  {
+        this.path = path;
     }
 
     public String getMethod()  {
@@ -47,32 +57,34 @@ public class Request  {
         return method  + " " + path + " " + headers.toString();
     }
 
-    public boolean parse() throws IOException {
+    public boolean parse(String initialLine) throws IOException {
         boolean bool = true;
 
-        String initialLine = in.readLine();
+        //String initialLine = in.readLine();
         log(initialLine);
         StringTokenizer tok = new StringTokenizer(initialLine," ");
         String[] components = new String[3];
         for (int i = 0; i < 3; i++) {
             if (tok.hasMoreTokens())  {
                 components[i] = tok.nextToken();
-                System.out.println("InitialLine accepted");
             } else  {
                 System.out.println("Illegal initialLine");
                 bool = false;
                 return bool;
             }
         }
-        System.out.println("continua");
         method = components[0];
         fullUrl = components[1];
         // Consume headers
         while (bool == true)  {
-            String headerLine = in.readLine();
+            System.out.println("Preencha o header do pedido.");
+            System.out.println("(Exemplo: " + "Host: endereço do host)");
+            System.out.println("Se não quiser preencher é só dar enter.");
+            Scanner sc = new Scanner(System.in);
+            String headerLine = sc.nextLine();
             log(headerLine);
             if (headerLine.length() == 0) {
-                System.out.println("HeaderLine inválida");
+                System.out.println("HeaderLine incompleta");
                 break;
             }
 
@@ -88,18 +100,18 @@ public class Request  {
 
         if (components[1].indexOf("?") == -1) {
             path = components[1];
-            System.out.println("Path:" + path);
+            //System.out.println("Path:" + path);
         } else  {
             path = components[1].substring(0, components[1].indexOf("?"));
-            System.out.println("Path:" + path);
+            //System.out.println("Path:" + path);
             String subpath = components[1].substring(components[1].indexOf("?") - 1);
-            System.out.println(subpath);
+            //System.out.println(subpath);
             parseQueryParameters(subpath);
         }
 
         if ("/".equals(path)) {
             path = "/index.html";
-            System.out.println("Path:" + path);
+            //System.out.println("Path:" + path);
         }
 
         return bool;

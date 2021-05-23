@@ -1,6 +1,7 @@
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -33,6 +34,38 @@ public class Response  {
         this.body = body;
     }
 
+    public void readFile(String path) throws IOException {
+        File file = new File(path);
+        byte[] bytesArray = new byte[(int) file.length()];
+        BufferedReader fis = null;
+        Path fileName = Path.of(path);
+        String content  = null;
+        //Files.writeString(fileName, content);
+
+        String actual = Files.readString(fileName);
+        addBody(actual);
+    }
+
+    public void URLreader(String path) throws Exception {
+
+        URL url = new URL(path);
+        try (var br = new BufferedReader(new InputStreamReader(url.openStream()))) {
+
+            String line;
+
+            var sb = new StringBuilder();
+
+            while ((line = br.readLine()) != null) {
+
+                sb.append(line);
+                sb.append(System.lineSeparator());
+            }
+
+            addBody(sb.toString());
+        }
+    }
+
+
     public void send() throws IOException  {
         ByteArrayOutputStream o = new ByteArrayOutputStream();
         headers.put("Connection", "Close");
@@ -46,8 +79,15 @@ public class Response  {
             o.write(body.getBytes());
         }
         String finalString = new String(o.toByteArray());
+        System.out.println();
+        System.out.println("-> RESPOSTA");
         System.out.println(finalString);
+        System.out.println();
+        System.out.println("<- RESPOSTA");
+        System.out.println();
         out = (OutputStream) o;
+        //System.out.println(out);
+        addBody(o.toString());
     }
 
     public String toString() {
