@@ -76,12 +76,16 @@ public class Request  {
         method = components[0];
         fullUrl = components[1];
         // Consume headers
+
         while (bool == true)  {
-            System.out.println("Preencha o header do pedido.");
-            System.out.println("(Exemplo: " + "Host: endereço do host)");
-            System.out.println("Se não quiser preencher é só dar enter.");
+            System.out.println();
+            System.out.println("-------Preencha o header do pedido------");
+            System.out.println("-----(Exemplo: " + "Host: endereço do host)------");
+            System.out.println("-----Se não quiser preencher é só dar enter-----");
             Scanner sc = new Scanner(System.in);
-            String headerLine = sc.nextLine();
+            String headerLine = "eh pah";
+            headerLine = sc.nextLine();
+            bool = false;
             log(headerLine);
             if (headerLine.length() == 0) {
                 System.out.println("HeaderLine incompleta");
@@ -98,6 +102,7 @@ public class Request  {
                     headerLine.substring(separator + 1));
         }
 
+        bool = true;
         if (components[1].indexOf("?") == -1) {
             path = components[1];
             //System.out.println("Path:" + path);

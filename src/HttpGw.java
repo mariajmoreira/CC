@@ -12,9 +12,17 @@ public class HttpGw  {
     // request paths.
     private Map<String, Map<String, Handler>> handlers = new HashMap<String, Map<String, Handler>>();
     private Request request;
-    private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+    private static BufferedReader in;
 
-    public HttpGw(int port)  {
+    static {
+        try {
+            in = new BufferedReader(new FileReader("/Users/mariajoao/Desktop/GETFILES/input.txt"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public HttpGw(int port) throws FileNotFoundException {
         this.port = port;
     }
 
@@ -37,18 +45,20 @@ public class HttpGw  {
     }
 
 
-    public void start() throws IOException, InterruptedException {
+    public void start(String s) throws IOException, InterruptedException {
         ServerSocket socket = new ServerSocket(port);
         System.out.println("Listening on port " + port);
         Socket client = new Socket(InetAddress.getLocalHost(),port);
         client = socket.accept();
         if (client != null)  {
             System.out.println("Received connection from " + client.getRemoteSocketAddress().toString());
-            SocketHandler handler = new SocketHandler(client, handlers, request);
+            SocketHandler handler = new SocketHandler(client, handlers, request,s);
             Thread t = new Thread(handler);
             t.start();
             t.join();
         }
+       // client.close();
+        socket.close();
     }
 
 
@@ -132,9 +142,13 @@ public class HttpGw  {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         HttpGw server = new HttpGw(8080);
-        server.start();
+        System.out.println("Lendo os pedidos do ficheiro input: ");
+        String s;
+        ArrayList<String> requestToken = new ArrayList<>();
+        while ((s = in.readLine()) != null) {
+            server.start(s);
+        }
     }
 
-        //GET /Users/mariajoao/Desktop/PL/TP1/Final/Atleta93.html HTTP/1.1
 
 }
