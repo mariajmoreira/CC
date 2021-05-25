@@ -16,10 +16,9 @@ public class SocketHandler implements Runnable {
         private String s;
 
     public SocketHandler(Socket socket,
-                             Map<String, Map<String, Handler>> handlers, Request request, String s) throws FileNotFoundException {
+                             Map<String, Map<String, Handler>> handlers, String s) throws FileNotFoundException {
             this.socket = socket;
             this.handlers = handlers;
-            this.request = request;
             this.s=s;
         }
 

@@ -45,21 +45,13 @@ public class HttpGw  {
     }
 
 
+
     public void start(String s) throws IOException, InterruptedException {
-        ServerSocket socket = new ServerSocket(port);
-        System.out.println("Listening on port " + port);
-        Socket client = new Socket(InetAddress.getLocalHost(),port);
-        client = socket.accept();
-        if (client != null)  {
-            System.out.println("Received connection from " + client.getRemoteSocketAddress().toString());
-            SocketHandler handler = new SocketHandler(client, handlers, request,s);
-            Thread t = new Thread(handler);
-            t.start();
-            t.join();
-        }
-       // client.close();
-        socket.close();
+        FastFileSrv ffs = new FastFileSrv(this.port,this.handlers,s);
+        ffs.start(s);
     }
+
+
 
 
     /*

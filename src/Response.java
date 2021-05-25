@@ -4,6 +4,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.HashMap;
+//import org.apache.pdfbox.pdmodel.PDDocument;
+//import org.apache.pdfbox.text.PDFTextStripper;
 
 /**
  * Encapsulate an HTTP Response.  Mostly just wrap an output stream and
@@ -43,6 +45,7 @@ public class Response  {
         //Files.writeString(fileName, content);
 
         String actual = Files.readString(fileName);
+        //System.out.println(actual);
         addBody(actual);
     }
 
