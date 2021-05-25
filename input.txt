@@ -1,0 +1,3 @@
+GET /Users/mariajoao/Desktop/PL/TP1/Final/Atleta93.html HTTP/1.1
+GET /Users/mariajoao/Desktop/PL/TP1/Final/Atleta87.html HTTP/1.1
+GET /Users/mariajoao/Desktop/GETFILES/input.txt HTTP/1.1
