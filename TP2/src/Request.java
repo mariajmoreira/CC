@@ -1,17 +1,25 @@
-import java.nio.ByteBuffer;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+public class Request implements Serializable {
 
-public class Request {
-    //request line
-    private String method;
-    private String URL;
-    private String version;
-    //header lines
-    private String header;
-    private String value;
-    //body
-    private String body;
+    //Contém a data de criação do Request.
+    private long creationTime;
 
-    static byte[] gerarPacoteDados(int numSeq, String body) {
-        return ByteBuffer.allocate(body.length()).putInt(numSeq).put(Byte.parseByte(body)).array();
-    }
+    //Contém o endereço de origem.
+    private String origin_address;
+
+    //Contém o endereço do nó que criou o Request.
+    private String id_address;
+
+    //Contém a mensagem que a origem quer transmitir ao destino.
+    private String message;
+
+    //Contém a resposta do servidor à origem, por linhas.
+    private List<String> response;
+
+
+    private String status;
+
 }
